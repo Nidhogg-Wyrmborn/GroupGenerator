@@ -1,0 +1,3 @@
+to create a list of students, write in the names of each student (first name, lastname, middlename, which ever suits you)
+on each line, each line will be read by the program and interpreted as a single student, once the program is open it will ask for
+the number of students per group, i will work on making a program that can take a number of groups and figure that out
