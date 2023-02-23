@@ -1,5 +1,7 @@
 import random, sys, easygui
 
+WorkingVersion = 1.0.0
+
 new = easygui.buttonbox("create new list?", choices=['yes', 'no'])
 if new == "yes":
     studentfile = easygui.filesavebox("select studentfile", default="*.lst", filetypes=["*.lst"])
@@ -21,6 +23,50 @@ studs = []
 
 for student in studentlist:
     studs.append(student.replace("\n", ""))
+
+def update(version):
+    # update to given version
+
+def version(version1, version2):
+    # check versions if version1 greater that version2 True
+    version1 = version1.split(".")
+    version2 = version2.split('.')
+
+    if len(version1)!=len(version2):
+        easygui.msgbox("Version Numbers not same format, please report on github:\n https://github.com/Nidhogg-Wyrmborn/GroupGenerator")
+        sys.exit(1)
+
+    numbers = []
+
+    for num in range(len(version1)):
+        numbers.append([version1[num], version2[num]])
+
+    for i in range(len(numbers)):
+        index = len(numbers)-i
+        if numbers[index][0] > numbers[index][1]:
+            print("greater")
+            easygui.msgbox("update available")
+            return True
+            break
+        if numbers[index][0] == numbers[index][1]:
+            print("equal")
+            continue
+        else:
+            print("lesser")
+            easygui.msgbox("HOW ON EARTH DID YOU GET AHEAD OF DEV????")
+            sys.exit(1)
+    return False
+
+def checkUpdate():
+    # check for update
+    content = requests.get("https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/version.v", verify=False)
+    print(content)
+    if version(content, WorkingVersion):
+        # if update
+        return [True, content]
+    else:
+        # if no update
+        return [False, None]
 
 class GroupSelector:
     def __init__(self, student_list, number_per_group):
@@ -81,6 +127,9 @@ class GroupSelector:
         return op
 
 if __name__ == '__main__':
+    c = checkUpdate()
+    if c[0]:
+        Update(c[1])
     number_per_group = easygui.integerbox("number of students per group")
     generator = GroupSelector(studs, number_per_group)
     easygui.msgbox(generator.main())
