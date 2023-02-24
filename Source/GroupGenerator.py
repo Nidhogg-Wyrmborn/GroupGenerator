@@ -1,7 +1,7 @@
 import random, sys, os, easygui, threading, requests, shutil, time
 import tkPBar as tkPB
 
-WorkingVersion = "1.0.1"
+WorkingVersion = "1.0.2"
 
 def restart():
     time.sleep(1)
@@ -9,7 +9,7 @@ def restart():
     shutil.rmtree("./tmp")
     os.system("start ./GroupGenerator.exe")
 
-def Update(version_number):
+def Update(version_number, pbar):
     # update to given version
 
     target = f"https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/Dist/{version_number}/GroupGenerator.exe"
@@ -20,6 +20,7 @@ def Update(version_number):
 
     os.mkdir("./tmp")
     # display progress bar
+    pbar.root.destroy()
     pbar = tkPB.tkProgressbar(int(filesize), Determinate=True)
     with requests.get(target, stream=True, verify=False) as r:
         r.raise_for_status()
@@ -73,17 +74,22 @@ def version(version1, version2):
 
 def checkUpdate():
     # check for update
+    c = tkPB.tkProgressbar(10000,Determinate=False)
+    c.description("Check for updates")
     try:
         content = requests.get("https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/version.v", verify=False)
     except:
         return None
     print(content.content.decode())
     if version(content.content.decode(), WorkingVersion):
+        c.description("update found")
         # if update
-        return [True, content.content.decode()]
+        return [True, content.content.decode(), c]
     else:
+        c.description("no update found")
+        c.root.destroy()
         # if no update
-        return [False, None]
+        return [False, None, None]
 
 class GroupSelector:
     def __init__(self, student_list, number_per_group):
@@ -151,7 +157,7 @@ if __name__ == '__main__':
         if c[0]:
             print(c)
             #sys.exit()
-            Update(c[1])
+            Update(c[1], c[2])
 
     new = easygui.buttonbox("create new list?", choices=['yes', 'no'])
     if new == "yes":
@@ -175,6 +181,11 @@ if __name__ == '__main__':
     for student in studentlist:
         studs.append(student.replace("\n", ""))
 
-    number_per_group = easygui.integerbox("number of students per group")
-    generator = GroupSelector(studs, number_per_group)
-    easygui.msgbox(generator.main())
+    running = True
+
+    while running:
+        number_per_group = easygui.integerbox("number of students per group")
+        if number_per_group == None:
+            running = False
+        generator = GroupSelector(studs, number_per_group)
+        easygui.msgbox(generator.main())
