@@ -1,7 +1,7 @@
 import random, sys, os, easygui, threading, requests, shutil, time
 import tkPBar as tkPB
 
-WorkingVersion = "1.0.3"
+WorkingVersion = "1.0.4"
 
 def restart():
     time.sleep(1)
@@ -68,8 +68,11 @@ def version(version1, version2):
             continue
         else:
             print("lesser")
-            easygui.msgbox("HOW ON EARTH DID YOU GET AHEAD OF DEV????")
-            sys.exit(1)
+            c = easygui.buttonbox("You are ahead of Development, Downgrade?", choices=["yes", "no"])
+            if c == "yes":
+                return True
+            else:
+                return False
     return False
 
 def checkUpdate():
@@ -174,9 +177,13 @@ if __name__ == '__main__':
         tutorial = "to create a list of students, write in the names of each student (first name, lastname, middlename, which ever suits you)\n" \
         "on each line, each line will be read by the program and interpreted as a single student, once the program is open it will ask for\n" \
         "the number of students per group, i will work on making a program that can take a number of groups and figure that out"
-        with open(studentfile, 'w') as f:
-            f.write(tutorial)
-        sys.exit(1)
+        try:
+            with open(studentfile, 'w') as f:
+                f.write(tutorial)
+            sys.exit(1)
+        except:
+            print("NoneType")
+            sys.exit(1)
 
     studs = []
 
