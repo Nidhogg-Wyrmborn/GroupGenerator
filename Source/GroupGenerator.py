@@ -1,7 +1,7 @@
 import random, sys, os, easygui, threading, requests, shutil, time
 import tkPBar as tkPB
 
-WorkingVersion = "1.0.2"
+WorkingVersion = "1.0.3"
 
 def restart():
     time.sleep(1)
@@ -124,6 +124,7 @@ class GroupSelector:
         return out
 
     def main(self):
+        self.groups = []
         while True:
             # is adding students to list
             if self.student_list == []:
@@ -141,6 +142,7 @@ class GroupSelector:
             self.groups.append(candidate)
 
         op = ''
+        #print(self.groups)
 
         for group in range(len(self.groups)):
             op+=(f"group {group+1}:\t{self.groups[group]}")+"\n"
@@ -184,8 +186,16 @@ if __name__ == '__main__':
     running = True
 
     while running:
-        number_per_group = easygui.integerbox("number of students per group")
-        if number_per_group == None:
+        try:
+            number_per_group = easygui.integerbox("number of students per group")
+            if number_per_group == None:
+                running = False
+            generator = GroupSelector(studs, number_per_group)
+            easygui.msgbox(generator.main())
+            studs = []
+            for student in studentlist:
+                studs.append(student.replace("\n", ""))
+            del generator
+        except:
             running = False
-        generator = GroupSelector(studs, number_per_group)
-        easygui.msgbox(generator.main())
+            continue
