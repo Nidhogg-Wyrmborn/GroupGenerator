@@ -77,6 +77,8 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+        self.checkForUpdate(True)
+
     # define the update function
     def Update(self, version_number):
         print("updating")
@@ -194,8 +196,9 @@ class Ui_MainWindow(object):
             return [False, None]
 
     # when button clicked to check for update, run this
-    def checkForUpdate(self):
-        self.setupUi(self.MainWindow)
+    def checkForUpdate(self, isSelf=False):
+        if not isSelf:
+            self.setupUi(self.MainWindow)
         print("check for update")
         c = self.checkUpdate()
         if c == None:
