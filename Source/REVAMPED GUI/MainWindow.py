@@ -20,7 +20,7 @@ WorkingVersion = "1.1.0"
 
 class Ui_MainWindow(object):
     # setup the widgets in the ui
-    def setupUi(self, MainWindow):
+    def setupUi(self, MainWindow, nth=False):
         # setup the Main window
 
         # set the main window object name
@@ -181,7 +181,8 @@ class Ui_MainWindow(object):
         # setup all functions and connections (links between widgets)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        self.checkForUpdate(True)
+        if nth:
+            self.checkForUpdate()
 
     # define the update function
     def Update(self, version_number):
@@ -226,7 +227,8 @@ class Ui_MainWindow(object):
         Thread(target=self.restart, daemon=False).start()
 
         # exit out of program so restart is possible
-        sys.exit(1)
+        print("QtCore.QCoreApplication.instance().quit()")
+        QtCore.QCoreApplication.instance().quit()
 
     # define the restart function (class function)
     def restart(self):
@@ -312,23 +314,30 @@ class Ui_MainWindow(object):
             return [False, None]
 
     # when button clicked to check for update, run this
-    def checkForUpdate(self, isSelf=False):
-        if not isSelf:
+    def checkForUpdate(self):
+        # try to update, if not possible, then change layout
+        try:
+            print("check for update") # DEBUG
+
+            # set _translate for testing layout
+            _translate = QtCore.QCoreApplication.translate
+
+            self.progressText.setText(_translate("MainWindow", " "))
+
+            # check for updates (request user intervention if downgrade recommended)
+            c = self.checkUpdate()
+
+            # if can't check (no internet or website blocked)
+            if c == None:
+                easygui.msgbox("unable to check for updates")
+            # otherwise
+            else:
+                # if there is an update, update
+                if c[0]:
+                    self.Update(c[1])
+        except:
             # set main widget to progressbar and download details
             self.setupUi(self.MainWindow)
-        print("check for update") # DEBUG
-
-        # check for updates (request user intervention if downgrade recommended)
-        c = self.checkUpdate()
-
-        # if can't check (no internet or website blocked)
-        if c == None:
-            easygui.msgbox("unable to check for updates")
-        # otherwise
-        else:
-            # if there is an update, update
-            if c[0]:
-                self.Update(c[1])
 
     # define the function to switch layouts
     def GroupGeneratorWidget(self):
