@@ -154,7 +154,7 @@ class GroupSelector:
 
         return op
 
-if __name__ == '__main__':
+def Initiatlize():
     c = checkUpdate()
     if c == None:
         easygui.msgbox("unable to check for updates")
@@ -163,6 +163,9 @@ if __name__ == '__main__':
             print(c)
             #sys.exit()
             Update(c[1], c[2])
+
+if __name__ == '__main__':
+    Initialize()
 
     new = easygui.buttonbox("create new list?", choices=['yes', 'no'])
     if new == "yes":
