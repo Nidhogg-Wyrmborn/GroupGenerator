@@ -181,6 +181,8 @@ class Ui_MainWindow(object):
         # setup all functions and connections (links between widgets)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+        self.checkForUpdate(True)
+
     # define the update function
     def Update(self, version_number):
         print("updating") # DEBUG
@@ -310,10 +312,10 @@ class Ui_MainWindow(object):
             return [False, None]
 
     # when button clicked to check for update, run this
-    def checkForUpdate(self):
-        # change main widget to progressbar, and download details
-        self.setupUi(self.MainWindow)
-
+    def checkForUpdate(self, isSelf=False):
+        if not isSelf:
+            # set main widget to progressbar and download details
+            self.setupUi(self.MainWindow)
         print("check for update") # DEBUG
 
         # check for updates (request user intervention if downgrade recommended)
