@@ -21,65 +21,169 @@ WorkingVersion = "1.1.0"
 class Ui_MainWindow(object):
     # setup the widgets in the ui
     def setupUi(self, MainWindow):
+        # setup the Main window
+
+        # set the main window object name
         MainWindow.setObjectName("MainWindow")
+
+        # enable the mainwindow (enable interaction)
         MainWindow.setEnabled(True)
+
+        # size the window to 800x600 (800 px height, 600 px Width)
         MainWindow.resize(800, 600)
+
+        # create central widget (progressbar and download details)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
+
+        # set the central widget object name
         self.centralwidget.setObjectName("centralwidget")
+
+        # hide the centralwidget (OBSOLETE)
         #self.centralwidget.hide()
+
+        # craete progressbar
         self.ProgressBar = QtWidgets.QProgressBar(self.centralwidget)
+
+        # enable the progressbar
         self.ProgressBar.setEnabled(True)
+
+        # set it's size(661x21) and location (70, 490)
         self.ProgressBar.setGeometry(QtCore.QRect(70, 490, 661, 21))
+
+        # set the progress bar value to 0
         self.ProgressBar.setProperty("value", 0)
+
+        # set the progress bar's text to center
         self.ProgressBar.setAlignment(QtCore.Qt.AlignCenter)
+
+        # make the text visible
         self.ProgressBar.setTextVisible(True)
+
+        # set the progressbar to horizontal
         self.ProgressBar.setOrientation(QtCore.Qt.Horizontal)
+
+        # set the progressbar objectname
         self.ProgressBar.setObjectName("ProgressBar")
+
+        # create the download details label
         self.progressText = QtWidgets.QLabel(self.centralwidget)
+
+        # set the size (511x20) and location (144, 470)
         self.progressText.setGeometry(QtCore.QRect(144, 470, 511, 20))
+
+        # set the alignment (center)
         self.progressText.setAlignment(QtCore.Qt.AlignCenter)
+
+        # set the download details object name
         self.progressText.setObjectName("progressText")
+
+        # set central widget (DUPLICATE, DONE TOWARDS END OF SETUP)
         #MainWindow.setCentralWidget(self.centralwidget)
+
+        # create menubar
         self.menubar = QtWidgets.QMenuBar(MainWindow)
+
+        # set location (0,0) and size (800x26)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 26))
+
+        # set menubar object name
         self.menubar.setObjectName("menubar")
+
+        # create menu for menubar (start module)
         self.GroupGenerator = QtWidgets.QMenu(self.menubar)
+
+        # set object name
         self.GroupGenerator.setObjectName("GroupGenerator")
+
+        # create submenu under GroupGenerator
         self.menuStart_Module = QtWidgets.QMenu(self.GroupGenerator)
+
+        # set object name
         self.menuStart_Module.setObjectName("menuStart_Module")
+
+        # open Group Generator widget on click (OBSOLETE)
         #self.GroupGenerator.aboutToShow.connect(self.GroupGeneratorWidget)
+
+        # set main window's menubar to menubar
         MainWindow.setMenuBar(self.menubar)
+
+        # create status bar
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
+
+        # set object name
         self.statusbar.setObjectName("statusbar")
+
+        # set main window's statusbar to statusbar
         MainWindow.setStatusBar(self.statusbar)
+
+        # create action for menubar (UNUSED)
         self.actionLoad_File = QtWidgets.QAction(MainWindow)
+
+        # set object name
         self.actionLoad_File.setObjectName("actionLoad_File")
+
+        # create action for menubar (Check for update)
         self.actionCheck_for_Update = QtWidgets.QAction(MainWindow)
+
+        # run function when clicked
         self.actionCheck_for_Update.triggered.connect(self.checkForUpdate)
+
+        # set object name
         self.actionCheck_for_Update.setObjectName("actionCheck_for_Update")
+
+        # create action for menubar (UNUSED)
         self.actionLoad = QtWidgets.QAction(MainWindow)
+
+        # set object name
         self.actionLoad.setObjectName("actionLoad")
+
+        # create action for submenu (Group Generator)
         self.actionGroup_Generator = QtWidgets.QAction(MainWindow)
+
+        # run functino when clicked
         self.actionGroup_Generator.triggered.connect(self.GroupGeneratorWidget)
+
+        # set object name
         self.actionGroup_Generator.setObjectName("actionGroup_Generator")
+
+        # add group generator action to submenu
         self.menuStart_Module.addAction(self.actionGroup_Generator)
+
+        # create action for menu (OBSOLETE, CONFLICTORY)
         #self.actionStart_Module = QtWidgets.QAction(MainWindow)
         #self.actionStart_Module.triggered.connect(self.GroupGeneratorWidget)
         #self.actionStart_Module.setObjectName("actionStart_Module")
+
+        # add check for update action to menu
         self.GroupGenerator.addAction(self.actionCheck_for_Update)
+
+        # add separator to menubar
         self.GroupGenerator.addSeparator()
+
+        # add start module submenu to menu
         self.GroupGenerator.addAction(self.menuStart_Module.menuAction())
+
+        # add menu to menubar
         self.menubar.addAction(self.GroupGenerator.menuAction())
 
+        # declare studentfile variable (empty string)
         self.studentfile = ''
+
+        # set MainWindow to a shared variable
         self.MainWindow = MainWindow
+
+        # set central widget to Progressbar and download details
         self.MainWindow.setCentralWidget(self.centralwidget)
+
+        # generate text for main window
         self.retranslateUi(MainWindow)
+
+        # setup all functions and connections (links between widgets)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     # define the update function
     def Update(self, version_number):
-        print("updating")
+        print("updating") # DEBUG
         # set central widget to the progress bar
         self.MainWindow.setCentralWidget(self.centralwidget)
 
@@ -118,19 +222,30 @@ class Ui_MainWindow(object):
 
         # create restart thread
         Thread(target=self.restart, daemon=False).start()
+
+        # exit out of program so restart is possible
         sys.exit(1)
 
     # define the restart function (class function)
     def restart(self):
-        print("restarting")
+        print("restarting") # DEBUG
+
+        # pause for 3 seconds to allow time for the main program to close
         time.sleep(3)
+
+        # move the downloaded file to the current directory
         shutil.move("./tmp/GroupGenerator.exe", "./GroupGenerator.exe")
+
+        # remove the temp directory
         shutil.rmtree("./tmp")
+
+        # start the updated program
         os.system("start ./GroupGenerator.exe")
 
     # get version number and compare the working version
     def version(self, version1, version2):
-        print("checking versions")
+        print("checking versions") # DEBUG
+
         # split into individual digits
         version1 = version1.split(".")
         version2 = version2.split(".")
@@ -172,7 +287,8 @@ class Ui_MainWindow(object):
 
     # check for updates
     def checkUpdate(self):
-        print("getting version")
+        print("getting version") # DEBUG
+
         # set _translate for displaying progresstext
         _translate = QtCore.QCoreApplication.translate
 
@@ -195,24 +311,39 @@ class Ui_MainWindow(object):
 
     # when button clicked to check for update, run this
     def checkForUpdate(self):
+        # change main widget to progressbar, and download details
         self.setupUi(self.MainWindow)
-        print("check for update")
+
+        print("check for update") # DEBUG
+
+        # check for updates (request user intervention if downgrade recommended)
         c = self.checkUpdate()
+
+        # if can't check (no internet or website blocked)
         if c == None:
             easygui.msgbox("unable to check for updates")
+        # otherwise
         else:
+            # if there is an update, update
             if c[0]:
                 self.Update(c[1])
 
     # define the function to switch layouts
     def GroupGeneratorWidget(self):
-        #self.centralwidget.show()
+        #self.centralwidget.show() # OBSOLETE
+
+        # create group generator widget
         GGWidget = GroupGeneratorWidget()
+
+        # set main widget to ggwidget
         self.MainWindow.setCentralWidget(GGWidget)
 
     # define the text for each widget
     def retranslateUi(self, MainWindow):
+        # create local translate function from library
         _translate = QtCore.QCoreApplication.translate
+
+        # setup text for each widget
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.progressText.setText(_translate("MainWindow", " "))
         self.GroupGenerator.setTitle(_translate("MainWindow", "Main"))
