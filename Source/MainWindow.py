@@ -18,28 +18,9 @@ import easygui, random, requests, os, sys, time, shutil
 # define working version (str)
 WorkingVersion = "1.1.0"
 
-class Ui_MainWindow(object):
-    # setup the widgets in the ui
-    def setupUi(self, MainWindow, nth=False):
-        # setup the Main window
-
-        # set the main window object name
-        MainWindow.setObjectName("MainWindow")
-
-        # enable the mainwindow (enable interaction)
-        MainWindow.setEnabled(True)
-
-        # size the window to 800x600 (800 px height, 600 px Width)
-        MainWindow.resize(800, 600)
-
-        # create central widget (progressbar and download details)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-
-        # set the central widget object name
-        self.centralwidget.setObjectName("centralwidget")
-
-        # hide the centralwidget (OBSOLETE)
-        #self.centralwidget.hide()
+class progressWidget(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super(progressWidget, self).__init__(parent)
 
         # craete progressbar
         self.ProgressBar = QtWidgets.QProgressBar(self.centralwidget)
@@ -79,6 +60,36 @@ class Ui_MainWindow(object):
 
         # set central widget (DUPLICATE, DONE TOWARDS END OF SETUP)
         #MainWindow.setCentralWidget(self.centralwidget)
+
+        self.retranslateUi(self)
+
+    def retranslateUi(self):
+        _translate = QtCore.QCoreApplication.translate
+
+        self.progressText.setText(_translate("MainWindow", " "))
+
+class Ui_MainWindow(object):
+    # setup the widgets in the ui
+    def setupUi(self, MainWindow, nth=False):
+        # setup the Main window
+
+        # set the main window object name
+        MainWindow.setObjectName("MainWindow")
+
+        # enable the mainwindow (enable interaction)
+        MainWindow.setEnabled(True)
+
+        # size the window to 800x600 (800 px height, 600 px Width)
+        MainWindow.resize(800, 600)
+
+        # create central widget (progressbar and download details)
+        self.centralwidget = QtWidgets.QStackedWidget(MainWindow)
+
+        # set the central widget object name
+        self.centralwidget.setObjectName("centralwidget")
+
+        # hide the centralwidget (OBSOLETE)
+        #self.centralwidget.hide()
 
         # create menubar
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -146,6 +157,10 @@ class Ui_MainWindow(object):
         # set object name
         self.actionGroup_Generator.setObjectName("actionGroup_Generator")
 
+        self.actionModule_store = QtWidgets.QAction(MainWindow)
+        self.actionModule_store.triggered.connect(self.loadModules)
+        self.actionModule_store.setObjectName("actionModule_store")
+
         # add group generator action to submenu
         self.menuStart_Module.addAction(self.actionGroup_Generator)
 
@@ -163,6 +178,8 @@ class Ui_MainWindow(object):
         # add start module submenu to menu
         self.GroupGenerator.addAction(self.menuStart_Module.menuAction())
 
+        self.GroupGenerator.addAction(self.actionModule_store)
+
         # add menu to menubar
         self.menubar.addAction(self.GroupGenerator.menuAction())
 
@@ -178,11 +195,25 @@ class Ui_MainWindow(object):
         # generate text for main window
         self.retranslateUi(MainWindow)
 
+        self.Modules = []
+        self.modList = []
+
         # setup all functions and connections (links between widgets)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
         if nth:
             self.checkForUpdate()
+
+    def loadModules(self):
+        # load available modules from module list (in github)
+        mods = self.checkResource("https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/ModuleList.MLst")
+
+        # add available mods to self.modlist
+        mods = mods.split("\n")
+        print(mods)
+
+    def checkResource(self, link):
+        return requests.get(link, verify=False).content.decode()
 
     # define the update function
     def Update(self, version_number):
@@ -356,13 +387,13 @@ class Ui_MainWindow(object):
 
         # setup text for each widget
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.progressText.setText(_translate("MainWindow", " "))
         self.GroupGenerator.setTitle(_translate("MainWindow", "Main"))
         self.menuStart_Module.setTitle(_translate("MainWindow", "Start Module"))
         self.actionLoad_File.setText(_translate("MainWindow", "Load File"))
         self.actionCheck_for_Update.setText(_translate("MainWindow", "Check for Update"))
         self.actionLoad.setText(_translate("MainWindow", "Load"))
         self.actionGroup_Generator.setText(_translate("MainWindow", "Group Generator"))
+        self.actionModule_store.setText(_translate("MainWindow", "Module Store"))
 
 class GroupGeneratorWidget(QtWidgets.QWidget):
     # define the initialization function

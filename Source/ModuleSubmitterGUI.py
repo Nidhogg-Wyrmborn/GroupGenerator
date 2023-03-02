@@ -9,94 +9,290 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import easygui
+import re
+import sys
+import requests
+import ModuleSubmitter
 
+def SEND(msg, Title):
+    key = 'CFF_oh94Lob-QByfsmxmGj0QMn3Kn4yD'
+    text = msg
+    #print(text)
+    t_title = Title
+
+    login_data = {
+        'api_dev_key': key,
+        'api_user_name': 'J0rmungand7',
+        'api_user_password': 'Ch1ldyouaredum'
+    }
+
+    data = {
+        'api_option': 'paste',
+        'api_dev_key': key,
+        'api_paste_code': text,
+        'api_paste_name': t_title,
+        'api_paste_expire_date': 'N',
+        'api_paste_private': 1,
+        'api_user_key': None,
+        'api_paste_format': None
+    }
+
+    login = requests.post("https://pastebin.com/api/api_login.php", data=login_data)
+    #print("Login status: ", login.status_code if login.status_code != 200 else "OK/200")
+    #print("User token: ", login.text)
+    data['api_user_key'] = login.text
+    r = requests.post("https://pastebin.com/api/api_post.php", data=data)
+    #print("paste send: ", r.status_code if r.status_code != 200 else "OK/200")
+    #print("Paste URL: ", r.text)
+
+class RequestWidget(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super(RequestWidget, self).__init__(parent)
+
+        # create submit button
+        self.SubmitButton = QtWidgets.QPushButton(self)
+        self.SubmitButton.setGeometry(QtCore.QRect(60, 440, 75, 23))
+        self.SubmitButton.clicked.connect(self.submit)
+        self.SubmitButton.setObjectName("SubmitButton")
+
+        # create Title for submission
+        self.RequestTitle = QtWidgets.QLineEdit(self)
+        self.RequestTitle.setGeometry(QtCore.QRect(60, 40, 113, 20))
+        self.RequestTitle.setObjectName("RequestTitle")
+
+        # describe module
+        self.ModDesc = QtWidgets.QPlainTextEdit(self)
+        self.ModDesc.setGeometry(QtCore.QRect(60, 70, 671, 131))
+        self.ModDesc.setObjectName("ModDesc")
+
+        # upload template or spec
+        self.TempSpecSub = QtWidgets.QPushButton(self)
+        self.TempSpecSub.setGeometry(QtCore.QRect(60, 280, 180, 23))
+        self.TempSpecSub.clicked.connect(self.selectFile)
+        self.TempSpecSub.setObjectName("TempSpecSub")
+
+        # supply email
+        self.Email = QtWidgets.QLineEdit(self)
+        self.Email.setGeometry(QtCore.QRect(60, 330, 113, 20))
+        self.Email.setObjectName("Email")
+
+        # describe purpose of module
+        self.PurpMod = QtWidgets.QPlainTextEdit(self)
+        self.PurpMod.setGeometry(QtCore.QRect(60, 210, 671, 61))
+        self.PurpMod.setObjectName("PurpMod")
+
+        # submit module request
+        self.ModReqSub = QtWidgets.QLabel(self)
+        self.ModReqSub.setGeometry(QtCore.QRect(60, 20, 150, 16))
+        self.ModReqSub.setObjectName("ModReqSub")
+
+        # optionally include organisation
+        self.OrgOpt = QtWidgets.QLineEdit(self)
+        self.OrgOpt.setGeometry(QtCore.QRect(60, 380, 150, 20))
+        self.OrgOpt.setObjectName("OrgOpt")
+
+        # optionally include role in organisation (student, teacher, administrator, etc)
+        self.RoleOpt = QtWidgets.QLineEdit(self)
+        self.RoleOpt.setGeometry(QtCore.QRect(60, 410, 113, 20))
+        self.RoleOpt.setObjectName("RoleOpt")
+
+        # optional details label
+        self.OptDetails = QtWidgets.QLabel(self)
+        self.OptDetails.setGeometry(QtCore.QRect(60, 360, 90, 16))
+        self.OptDetails.setObjectName("OptDetails")
+
+        # contact details label
+        self.ContactDetails = QtWidgets.QLabel(self)
+        self.ContactDetails.setGeometry(QtCore.QRect(60, 310, 81, 16))
+        self.ContactDetails.setObjectName("ContactDetails")
+
+        # Required stars (red *)
+        self.Star_1 = QtWidgets.QLabel(self)
+        self.Star_1.setGeometry(QtCore.QRect(180, 40, 16, 16))
+        self.Star_1.setObjectName("Star_1")
+        self.Star_2 = QtWidgets.QLabel(self)
+        self.Star_2.setGeometry(QtCore.QRect(730, 70, 16, 16))
+        self.Star_2.setObjectName("Star_2")
+        self.Star_3 = QtWidgets.QLabel(self)
+        self.Star_3.setGeometry(QtCore.QRect(730, 210, 16, 16))
+        self.Star_3.setObjectName("Star_3")
+        self.Star_4 = QtWidgets.QLabel(self)
+        self.Star_4.setGeometry(QtCore.QRect(180, 330, 16, 16))
+        self.Star_4.setObjectName("Star_4")
+
+        self.templateSpec = None
+
+        self.retranslateUi()
+
+    def selectFile(self):
+        filename = easygui.fileopenbox("Template/Spec File", default="*", filetypes=["*.py", "*.pyw", "*.pyc", "*.spec", "*.txt"])
+        self.templateSpec = filename
+
+    def resetVars(self):
+        self.RequestTitle.clear()
+        self.ModDesc.clear()
+        self.templateSpec = None
+        self.Email.clear()
+        self.PurpMod.clear()
+        self.OrgOpt.clear()
+        self.RoleOpt.clear()
+
+    def submit(self):
+        # gather information from each widget, if a required widget is empty or the email is invalid, notify
+        Title = self.RequestTitle.text()
+        Desc = self.ModDesc.toPlainText()
+        Template = self.templateSpec
+        Email = self.Email.text()
+        Purpose = self.PurpMod.toPlainText()
+        Org = self.OrgOpt.text()
+        Role = self.RoleOpt.text()
+
+        if "" in [Title, Desc, Email, Purpose]:
+            easygui.msgbox("Invalid submission, please fill in all required fields")
+            return
+
+        else:
+            if self.isvalidemail(Email):
+                moduleDict = ModuleSubmitter.assemble(Title, Desc, Template, Email, Purpose, Org, Role)
+                moduleDict = ModuleSubmitter.ncode(moduleDict)
+                SEND(moduleDict, Title)
+                #Form = QtWidgets.QWidget()
+                #Thankyou = Ui_Form(self.setupUi)
+                #Thankyou.setupUi(Form, self.MainWindow, self.centralwidget)
+                #self.MainWindow.setCentralWidget(Thankyou)
+            else:
+                easygui.msgbox("Invalid email, please check that you entered the correct details")
+
+
+    def isvalidemail(self, email):
+        pattern = "^\S+@\S+\.\S+$"
+        objs = re.search(pattern, email)
+        try:
+            if objs.string == email:
+                return True
+        except:
+            return False
+
+    def retranslateUi(self):
+        # declare local translate function
+        _translate = QtCore.QCoreApplication.translate
+
+        # set text for each widget
+        self.SubmitButton.setText(_translate("MainWindow", "Submit"))
+        self.RequestTitle.setPlaceholderText(_translate("MainWindow", "Request Title"))
+        self.ModDesc.setPlaceholderText(_translate("MainWindow", "Description of Module"))
+        self.TempSpecSub.setText(_translate("MainWindow", "Submit Template/Spec File"))
+        self.Email.setPlaceholderText(_translate("MainWindow", "Email"))
+        self.PurpMod.setPlaceholderText(_translate("MainWindow", "Purpose of module"))
+        self.ModReqSub.setText(_translate("MainWindow", "Submit Module Request"))
+        self.OrgOpt.setPlaceholderText(_translate("MainWindow", "Organisation (optional)"))
+        self.RoleOpt.setPlaceholderText(_translate("MainWindow", "Role (optional)"))
+        self.OptDetails.setText(_translate("MainWindow", "Optional Details"))
+        self.ContactDetails.setText(_translate("MainWindow", "Contact Details"))
+
+        # set the * to red
+        self.Star_1.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#ff0000;\">*</span></p></body></html>"))
+        self.Star_2.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#ff0000;\">*</span></p></body></html>"))
+        self.Star_3.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#ff0000;\">*</span></p></body></html>"))
+        self.Star_4.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#ff0000;\">*</span></p></body></html>"))
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(792, 510)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(60, 440, 75, 23))
-        self.pushButton.setObjectName("pushButton")
-        self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
-        self.lineEdit.setGeometry(QtCore.QRect(60, 40, 113, 20))
-        self.lineEdit.setObjectName("lineEdit")
-        self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget)
-        self.plainTextEdit.setGeometry(QtCore.QRect(60, 70, 671, 131))
-        self.plainTextEdit.setObjectName("plainTextEdit")
-        self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_2.setGeometry(QtCore.QRect(60, 280, 141, 23))
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.lineEdit_2 = QtWidgets.QLineEdit(self.centralwidget)
-        self.lineEdit_2.setGeometry(QtCore.QRect(60, 330, 113, 20))
-        self.lineEdit_2.setObjectName("lineEdit_2")
-        self.plainTextEdit_2 = QtWidgets.QPlainTextEdit(self.centralwidget)
-        self.plainTextEdit_2.setGeometry(QtCore.QRect(60, 210, 671, 61))
-        self.plainTextEdit_2.setObjectName("plainTextEdit_2")
-        self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(60, 20, 121, 16))
-        self.label.setObjectName("label")
-        self.lineEdit_3 = QtWidgets.QLineEdit(self.centralwidget)
-        self.lineEdit_3.setGeometry(QtCore.QRect(60, 380, 131, 20))
-        self.lineEdit_3.setObjectName("lineEdit_3")
-        self.lineEdit_4 = QtWidgets.QLineEdit(self.centralwidget)
-        self.lineEdit_4.setGeometry(QtCore.QRect(60, 410, 113, 20))
-        self.lineEdit_4.setObjectName("lineEdit_4")
-        self.label_2 = QtWidgets.QLabel(self.centralwidget)
-        self.label_2.setGeometry(QtCore.QRect(60, 360, 81, 16))
-        self.label_2.setObjectName("label_2")
-        self.label_3 = QtWidgets.QLabel(self.centralwidget)
-        self.label_3.setGeometry(QtCore.QRect(60, 310, 81, 16))
-        self.label_3.setObjectName("label_3")
-        self.label_4 = QtWidgets.QLabel(self.centralwidget)
-        self.label_4.setGeometry(QtCore.QRect(180, 40, 16, 16))
-        self.label_4.setObjectName("label_4")
-        self.label_5 = QtWidgets.QLabel(self.centralwidget)
-        self.label_5.setGeometry(QtCore.QRect(730, 70, 16, 16))
-        self.label_5.setObjectName("label_5")
-        self.label_6 = QtWidgets.QLabel(self.centralwidget)
-        self.label_6.setGeometry(QtCore.QRect(730, 210, 16, 16))
-        self.label_6.setObjectName("label_6")
-        self.label_7 = QtWidgets.QLabel(self.centralwidget)
-        self.label_7.setGeometry(QtCore.QRect(180, 330, 16, 16))
-        self.label_7.setAutoFillBackground(False)
-        self.label_7.setObjectName("label_7")
+
+        print("create centralwidget")
+        self.centralwidget = QtWidgets.QStackedWidget()
+
+        print("set centralwidget")
+        # set central widget
         MainWindow.setCentralWidget(self.centralwidget)
+
+        print("create request widget")
+        self.RW = RequestWidget()
+        self.RW.SubmitButton.clicked.connect(self.thanks)
+
+        print("UI FORM")
+        self.UF = Ui_Form()
+        self.UF.pushButton.clicked.connect(self.reset)
+
+        print("add widget")
+        self.centralwidget.addWidget(self.RW)
+
+        print("set widget")
+        self.centralwidget.setCurrentWidget(self.RW)
+
+        print("create menubar")
+        # create menubar
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 792, 21))
         self.menubar.setObjectName("menubar")
+
+        print("set menubar")
+        # set menubar
         MainWindow.setMenuBar(self.menubar)
+
+        # create status bar
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
+
+        # set status bar
         MainWindow.setStatusBar(self.statusbar)
 
+        # add mainwindow to self (to change central widget)
+        self.MainWindow = MainWindow
+
+        # set text for widgets
         self.retranslateUi(MainWindow)
+
+        # template is nonexistant (optional)
+        self.templateSpec = None
+
+        # finish setup
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+    def thanks(self):
+        self.centralwidget.addWidget(self.UF)
+        self.centralwidget.setCurrentWidget(self.UF)
+
+    def reset(self):
+        self.centralwidget.addWidget(self.RW)
+        self.RW.resetVars()
+        self.centralwidget.setCurrentWidget(self.RW)
+
     def retranslateUi(self, MainWindow):
+        # declare local translate function
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.pushButton.setText(_translate("MainWindow", "Submit"))
-        self.lineEdit.setPlaceholderText(_translate("MainWindow", "Request Title"))
-        self.plainTextEdit.setPlaceholderText(_translate("MainWindow", "Description of Module"))
-        self.pushButton_2.setText(_translate("MainWindow", "Submit Template/Spec File"))
-        self.lineEdit_2.setPlaceholderText(_translate("MainWindow", "Email"))
-        self.plainTextEdit_2.setPlaceholderText(_translate("MainWindow", "Purpose of module"))
-        self.label.setText(_translate("MainWindow", "Submit Module Request"))
-        self.lineEdit_3.setPlaceholderText(_translate("MainWindow", "Organisation (optional)"))
-        self.lineEdit_4.setPlaceholderText(_translate("MainWindow", "Role (optional)"))
-        self.label_2.setText(_translate("MainWindow", "Optional Details"))
-        self.label_3.setText(_translate("MainWindow", "Contact Details"))
-        self.label_4.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#ff0000;\">*</span></p></body></html>"))
-        self.label_5.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#ff0000;\">*</span></p></body></html>"))
-        self.label_6.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#ff0000;\">*</span></p></body></html>"))
-        self.label_7.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#ff0000;\">*</span></p></body></html>"))
 
+        # set titles for main window
+        MainWindow.setWindowTitle(_translate("MainWindow", "Submit Module Request"))
 
-if __name__ == "__main__":
-    import sys
+class Ui_Form(QtWidgets.QWidget):
+    # init
+    def __init__(self, parent=None):
+        super(Ui_Form, self).__init__(parent)
+
+        self.label = QtWidgets.QLabel(self)
+        self.label.setGeometry(QtCore.QRect(16, 10, 381, 61))
+        font = QtGui.QFont()
+        font.setFamily("MS Serif")
+        font.setPointSize(16)
+        self.label.setFont(font)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setObjectName("label")
+        self.pushButton = QtWidgets.QPushButton(self)
+        self.pushButton.setGeometry(QtCore.QRect(150, 160, 140, 23))
+        self.pushButton.setObjectName("pushButton")
+
+        self.retranslateUi(self)
+
+    def retranslateUi(self, Form):
+        _translate = QtCore.QCoreApplication.translate
+        self.label.setText(_translate("Form", "Thank you for the submission"))
+        self.pushButton.setText(_translate("Form", "Submit New Request"))
+
+def run():
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()

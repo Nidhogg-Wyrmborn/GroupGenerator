@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_Form(object):
-    def setupUi(self, Form):
+    def setupUi(self, Form, MW, CW):
         Form.setObjectName("Form")
         Form.resize(412, 300)
         self.label = QtWidgets.QLabel(Form)
@@ -24,11 +24,18 @@ class Ui_Form(object):
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName("label")
         self.pushButton = QtWidgets.QPushButton(Form)
-        self.pushButton.setGeometry(QtCore.QRect(150, 160, 111, 23))
+        self.pushButton.setGeometry(QtCore.QRect(150, 160, 140, 23))
+        self.pushButton.clicked.connect(self.reset)
         self.pushButton.setObjectName("pushButton")
+
+        self.MW = MW
+        self.CW = CW
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
+
+    def reset(self):
+        self.MW.setCentralWidget(self.CW)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
