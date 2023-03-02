@@ -154,7 +154,7 @@ class GroupSelector:
 
         return op
 
-def Initiatlize():
+def Initialize():
     c = checkUpdate()
     if c == None:
         easygui.msgbox("unable to check for updates")
