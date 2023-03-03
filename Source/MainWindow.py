@@ -210,7 +210,21 @@ class Ui_MainWindow(object):
 
         # add available mods to self.modlist
         mods = mods.split("\n")
-        print(mods)
+
+        for mod in range(len(mods)):
+            mods[mod] = mods[mod].split("==")
+
+        modDict = {}
+
+        for mod in mods:
+            modDict[mod[0]] = {}
+            modDict[mod[0]]["version"] = mod[1]
+
+        for mod in mods:
+            self.modList.append(mod)
+
+        print(modDict)
+        print(self.modList)
 
     def checkResource(self, link):
         return requests.get(link, verify=False).content.decode()
