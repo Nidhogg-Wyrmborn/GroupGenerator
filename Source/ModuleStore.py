@@ -18,7 +18,7 @@ class Ui_ModuleStore(QtWidgets.QWidget):
 
         self.Modules = QtWidgets.QListWidget(self)
         self.Modules.setGeometry(QtCore.QRect(10, 10, 256, 561))
-        self.Modules.itemClicked.connect(self.display)
+        self.Modules.itemClicked.connect(self.itemClicked)
         self.Modules.setObjectName("Modules")
         self.Desc = QtWidgets.QFrame(self)
         self.Desc.setGeometry(QtCore.QRect(269, 9, 491, 501))
@@ -69,13 +69,28 @@ class Ui_ModuleStore(QtWidgets.QWidget):
     def display(self, item):
         print(repr(item))
 
-    def fillList(self):
-        _, modDict = ModuleList.loadModules()
+    def itemClicked(self, item):
+        _translate = QtCore.QCoreApplication.translate
+        
+        details = self.modDict[item.text()]['Details']
+        title = self.modDict[item.text()]['Title']
+        desc = self.modDict[item.text()]['Desc']
 
-        for item in modDict:
-            print(modDict[item])
-            modDict[item]["QItem"] = QtWidgets.QListWidgetItem(modList[item]["Name"])
-            self.Modules.addItem(modDict[item]["QItem"])
+        print(details)
+        print(title)
+        print(desc)
+
+        self.Details.setText(_translate("ModuleStore", f"{details}"))
+        self.ModLabel.setText(_translate("ModuleStore", f"{title}"))
+        self.DescLabel.setText(_translate("ModuleStore", f"{desc}"))
+
+    def fillList(self):
+        _, self.modDict = ModuleList.loadModules()
+
+        for item in self.modDict:
+            print(self.modDict[item])
+            self.modDict[item]["QItem"] = QtWidgets.QListWidgetItem(self.modDict[item]["Name"])
+            self.Modules.addItem(self.modDict[item]["QItem"])
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
