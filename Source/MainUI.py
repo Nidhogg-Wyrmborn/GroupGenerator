@@ -9,6 +9,8 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import hashlib
+import requests
 
 class MainWindowWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -115,13 +117,22 @@ class Ui_MainWindow(object):
     def setupMenubar(self):
         pass
 
+    def hashify(self, item):
+        if not isinstance(item, bytes):
+            try:
+                item = item.encode()
+            except Exception as e:
+                raise Exception("Cannot encode item (HASHIFY), "+str(e)+"\n\n"+str(repr(item)))
+        return hashlib.sha256(item).hexdigest()
+
     def importModule(self, ModuleID):
         with open(f"{ModuleID.split('#')[0]}.MOD", 'r') as f:
             ModuleContent = ''.join(f.readlines())
 
         ModuleHash = self.hashify(ModuleContent)
+        print(ModuleHash)
 
-        with requests.get(f"https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/Dist/Modules/{ModuleID}/{ModuleID.split('#')[0]}.MODHash", verify=False) as r:
+        with requests.get(f"https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/Dist/Modules/{ModuleID.replace('#', '%23')}/{ModuleID.split('#')[0]}.MODHash", verify=False) as r:
             onlineContent = r.content.decode()
 
         if ModuleHash == onlineContent:
