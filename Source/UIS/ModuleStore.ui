@@ -172,6 +172,19 @@
     <string>{Status}</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="Request">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>510</y>
+     <width>93</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Request</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

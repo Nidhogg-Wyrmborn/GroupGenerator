@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ModuleStore.ui'
+# Form implementation generated from reading ui file 'UIS/modulestore.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -9,19 +9,16 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import ModuleList
-import ModuleSubmitterGUI as MSGUI
 
 
-class Ui_ModuleStore(QtWidgets.QWidget):
-    def __init__(self, parent=None):
-        super(Ui_ModuleStore, self).__init__(parent)
-
-        self.Modules = QtWidgets.QListWidget(self)
+class Ui_ModuleStore(object):
+    def setupUi(self, ModuleStore):
+        ModuleStore.setObjectName("ModuleStore")
+        ModuleStore.resize(772, 579)
+        self.Modules = QtWidgets.QListWidget(ModuleStore)
         self.Modules.setGeometry(QtCore.QRect(10, 10, 256, 561))
-        self.Modules.itemClicked.connect(self.itemClicked)
         self.Modules.setObjectName("Modules")
-        self.Desc = QtWidgets.QFrame(self)
+        self.Desc = QtWidgets.QFrame(ModuleStore)
         self.Desc.setGeometry(QtCore.QRect(269, 9, 491, 501))
         self.Desc.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.Desc.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -46,58 +43,32 @@ class Ui_ModuleStore(QtWidgets.QWidget):
         self.DescLabel.setFrameShape(QtWidgets.QFrame.WinPanel)
         self.DescLabel.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.DescLabel.setObjectName("DescLabel")
-        self.Un_Install = QtWidgets.QPushButton(self)
+        self.Un_Install = QtWidgets.QPushButton(ModuleStore)
         self.Un_Install.setGeometry(QtCore.QRect(660, 540, 93, 28))
         self.Un_Install.setObjectName("Un_Install")
-        self.Update = QtWidgets.QPushButton(self)
+        self.Update = QtWidgets.QPushButton(ModuleStore)
         self.Update.setGeometry(QtCore.QRect(560, 540, 93, 28))
         self.Update.setObjectName("Update")
-        self.pushButton = QtWidgets.QPushButton(self)
+        self.pushButton = QtWidgets.QPushButton(ModuleStore)
         self.pushButton.setGeometry(QtCore.QRect(270, 540, 93, 28))
         self.pushButton.setObjectName("pushButton")
-        self.installBar = QtWidgets.QProgressBar(self)
+        self.installBar = QtWidgets.QProgressBar(ModuleStore)
         self.installBar.setGeometry(QtCore.QRect(370, 540, 181, 23))
         self.installBar.setProperty("value", 24)
         self.installBar.setObjectName("installBar")
-        self.installStatus = QtWidgets.QLabel(self)
+        self.installStatus = QtWidgets.QLabel(ModuleStore)
         self.installStatus.setGeometry(QtCore.QRect(370, 520, 55, 16))
         self.installStatus.setObjectName("installStatus")
-        self.Request = QtWidgets.QPushButton(self)
+        self.Request = QtWidgets.QPushButton(ModuleStore)
         self.Request.setGeometry(QtCore.QRect(270, 510, 93, 28))
         self.Request.setObjectName("Request")
 
-        self.retranslateUi()
+        self.retranslateUi(ModuleStore)
+        QtCore.QMetaObject.connectSlotsByName(ModuleStore)
 
-        self.fillList()
-
-    def display(self, item):
-        print(repr(item))
-
-    def itemClicked(self, item):
+    def retranslateUi(self, ModuleStore):
         _translate = QtCore.QCoreApplication.translate
-
-        details = self.modDict[item.text()]['Details']
-        title = self.modDict[item.text()]['Title']
-        desc = self.modDict[item.text()]['Desc']
-
-        print(details)
-        print(title)
-        print(desc)
-
-        self.Details.setText(_translate("ModuleStore", f"{details}"))
-        self.ModLabel.setText(_translate("ModuleStore", f"{title}"))
-        self.DescLabel.setText(_translate("ModuleStore", f"{desc}"))
-
-    def fillList(self):
-        _, self.modDict = ModuleList.loadModules()
-
-        for item in self.modDict:
-            print(self.modDict[item])
-            self.modDict[item]["QItem"] = QtWidgets.QListWidgetItem(self.modDict[item]["Name"])
-            self.Modules.addItem(self.modDict[item]["QItem"])
-
-    def retranslateUi(self):
-        _translate = QtCore.QCoreApplication.translate
+        ModuleStore.setWindowTitle(_translate("ModuleStore", "Module Store"))
         self.Details.setText(_translate("ModuleStore", "{Author/Requestor Details}"))
         self.ModLabel.setText(_translate("ModuleStore", "{ModuleName}"))
         self.DescLabel.setText(_translate("ModuleStore", "{Description}"))
@@ -107,44 +78,12 @@ class Ui_ModuleStore(QtWidgets.QWidget):
         self.installStatus.setText(_translate("ModuleStore", "{Status}"))
         self.Request.setText(_translate("ModuleStore", "Request"))
 
-class MainUI:
-    def setupUi(self, ModuleStore):
-        
-        ModuleStore.setObjectName("ModuleStore")
-        ModuleStore.resize(772, 579)
-
-        self.centralwidget = QtWidgets.QStackedWidget()
-
-        ModuleStore.setCentralWidget(self.centralwidget)
-
-        self.MS = Ui_ModuleStore()
-        self.MS.Request.clicked.connect(self.requestForm)
-        self.centralwidget.addWidget(self.MS)
-        self.centralwidget.setCurrentWidget(self.MS)
-
-        self.retranslateUi(ModuleStore)
-        QtCore.QMetaObject.connectSlotsByName(ModuleStore)
-
-    def requestForm(self):
-        self.RF = MSGUI.RequestWidget()
-        self.RF.SubmitButton.clicked.connect(self.reset)
-        self.centralwidget.addWidget(self.RF)
-        self.centralwidget.setCurrentWidget(self.RF)
-
-    def reset(self):
-        self.centralwidget.addWidget(self.MS)
-        self.centralwidget.setCurrentWidget(self.MS)
-
-    def retranslateUi(self, ModuleStore):
-        _translate = QtCore.QCoreApplication.translate
-        ModuleStore.setWindowTitle(_translate("ModuleStore", "Module Store"))
-
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    ModuleStore = QtWidgets.QMainWindow()
-    ui = MainUI()
+    ModuleStore = QtWidgets.QWidget()
+    ui = Ui_ModuleStore()
     ui.setupUi(ModuleStore)
     ModuleStore.show()
     sys.exit(app.exec_())
