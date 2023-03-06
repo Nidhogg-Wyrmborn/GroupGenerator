@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Briefcase-Version: 0.3.12
+Name: school-utilities
+Formal-Name: School Utilities
+App-ID: com.benmann.mark.school-utilities.school-utilities
+Version: 0.0.1
+Home-page: https://github.com/Nidhogg-Wyrmborn/GroupGenerator
+Download-URL: https://github.com/Nidhogg-Wyrmborn/GroupGenerator
+Author: Forgotten Shell
+Author-email: mark@benmann.net
+Summary: views requests from the desktop application

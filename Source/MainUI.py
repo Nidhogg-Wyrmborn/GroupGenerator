@@ -107,6 +107,8 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionContact)
         self.menubar.addAction(self.menuFile.menuAction())
 
+        self.importModule("GroupGenerator#0001")
+
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -114,7 +116,19 @@ class Ui_MainWindow(object):
         pass
 
     def importModule(self, ModuleID):
-        pass
+        with open(f"{ModuleID.split('#')[0]}.MOD", 'r') as f:
+            ModuleContent = ''.join(f.readlines())
+
+        ModuleHash = self.hashify(ModuleContent)
+
+        with requests.get(f"https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/Dist/Modules/{ModuleID}/{ModuleID.split('#')[0]}.MODHash", verify=False) as r:
+            onlineContent = r.content.decode()
+
+        if ModuleHash == onlineContent:
+            print("Continue")
+            exec(ModuleContent)
+        else:
+            print("local version is outdated or tampered with")
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
