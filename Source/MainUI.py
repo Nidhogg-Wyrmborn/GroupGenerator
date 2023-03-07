@@ -39,7 +39,14 @@ class MainWindowWidget(QtWidgets.QWidget):
 
         self.setChangelog()
 
+    def GET(self, link):
+        return requests.get(link, verify=False)
+
     def setChangelog(self):
+        _translate = QtCore.QCoreApplication.translate
+        ChangeLog = self.GET("https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/changelog.chlg").content.decode()
+        ChangeLog = ChangeLog.split("\n")
+        ChangeLog = '\n'.join(ChangeLog[0:27])
         self.changeLog.setText(_translate("MainWindow", f"{ChangeLog}"))
 
     def retranslateUi(self):
