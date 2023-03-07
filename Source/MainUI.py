@@ -19,7 +19,7 @@ class MainWindowWidget(QtWidgets.QWidget):
         self.titleBar = QtWidgets.QLabel(self)
         self.titleBar.setGeometry(QtCore.QRect(12, 10, 771, 41))
         font = QtGui.QFont()
-        font.setPointSize(32)
+        font.setPointSize(25)
         self.titleBar.setFont(font)
         self.titleBar.setFrameShape(QtWidgets.QFrame.Box)
         self.titleBar.setAlignment(QtCore.Qt.AlignCenter)
@@ -36,6 +36,11 @@ class MainWindowWidget(QtWidgets.QWidget):
         self.latestModules.setObjectName("latestModules")
 
         self.retranslateUi()
+
+        self.setChangelog()
+
+    def setChangelog(self):
+        self.changeLog.setText(_translate("MainWindow", f"{ChangeLog}"))
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
@@ -109,7 +114,7 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionContact)
         self.menubar.addAction(self.menuFile.menuAction())
 
-        self.importModule("GroupGenerator#0001")
+        self.importModules()
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -125,6 +130,9 @@ class Ui_MainWindow(object):
                 raise Exception("Cannot encode item (HASHIFY), "+str(e)+"\n\n"+str(repr(item)))
         return hashlib.sha256(item).hexdigest()
 
+    def importModules(self):
+        pass #self.importModule("GroupGenerator#0001")
+
     def importModule(self, ModuleID):
         with open(f"{ModuleID.split('#')[0]}.MOD", 'r') as f:
             ModuleContent = ''.join(f.readlines())
@@ -132,13 +140,18 @@ class Ui_MainWindow(object):
         ModuleHash = self.hashify(ModuleContent)
         print(ModuleHash)
 
-        with requests.get(f"https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/Dist/Modules/{ModuleID.replace('#', '%23')}/{ModuleID.split('#')[0]}.MODHash", verify=False) as r:
-            onlineContent = r.content.decode()
+        target = f"https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/Dist/Modules/{ModuleID.replace('#', '%23')}/{ModuleID.split('#')[0]}.MODHash"
+        print(target)
+
+        with requests.get(target, verify=False) as r:
+            onlineContent = r.content.decode().replace("\n", "").replace(" ", "")
 
         if ModuleHash == onlineContent:
             print("Continue")
             exec(ModuleContent)
         else:
+            print(repr(ModuleHash))
+            print(repr(onlineContent))
             print("local version is outdated or tampered with")
 
     def retranslateUi(self, MainWindow):
