@@ -11,6 +11,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import hashlib
 import requests
+import ModuleSubmitterGUI as MSGUI
+import ModuleStore
+import updater
+import multiprocessing
+import os
 
 class MainWindowWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -39,15 +44,46 @@ class MainWindowWidget(QtWidgets.QWidget):
 
         self.setChangelog()
 
+        self.setLatestModules()
+
     def GET(self, link):
-        return requests.get(link, verify=False)
+        return requests.get(link, verify=False).content
 
     def setChangelog(self):
         _translate = QtCore.QCoreApplication.translate
-        ChangeLog = self.GET("https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/changelog.chlg").content.decode()
+        ChangeLog = self.GET("https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/changelog.chlg").decode()
         ChangeLog = ChangeLog.split("\n")
         ChangeLog = '\n'.join(ChangeLog[0:27])
         self.changeLog.setText(_translate("MainWindow", f"{ChangeLog}"))
+
+    def setLatestModules(self):
+        _translate = QtCore.QCoreApplication.translate
+
+        Latest = self.GET("https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/latestMod.lmod").decode()
+        Latest = Latest.split("\n")
+        print(Latest)
+
+        latlis = []
+        for module in Latest:
+            print(module)
+            module = module.split(";")
+            print(module)
+            if '' in module:
+                continue
+            temp = ' - '.join(module[0:2])+" : "+module[2]
+            #print(temp)
+            #print(module[0])
+            #print(module[1])
+            #print(module[2])
+            #print(module[0:2])
+            print(' - '.join(module[0:2])+" : "+module[2])
+            latlis.append(temp)
+
+        #print(latlis)
+
+        latlis = '\n\n'.join(latlis)
+
+        self.latestModules.setText(_translate("MainWindow", f"{latlis}"))
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
@@ -67,6 +103,13 @@ class Ui_MainWindow(object):
         # set central widget
         MainWindow.setCentralWidget(self.centralwidget)
 
+        # create widgets for later
+        self.RF = MSGUI.RequestWidget()
+        self.RF.SubmitButton.clicked.connect(self.openModStore)
+
+        self.MS = ModuleStore.Ui_ModuleStore()
+        self.MS.Request.clicked.connect(self.requestForm)
+
         self.MW = MainWindowWidget()
         self.centralwidget.addWidget(self.MW)
         self.centralwidget.setCurrentWidget(self.MW)
@@ -84,36 +127,33 @@ class Ui_MainWindow(object):
         MainWindow.setMenuBar(self.menubar)
 
         # create status bar
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
+        #self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        #self.statusbar.setObjectName("statusbar")
+        #MainWindow.setStatusBar(self.statusbar)
 
         # create actions and setup names
         self.actionCheck_For_Updates = QtWidgets.QAction(MainWindow)
+        self.actionCheck_For_Updates.triggered.connect(self.checkForUpdate)
         self.actionCheck_For_Updates.setObjectName("actionCheck_For_Updates")
         self.action_ModuleStore = QtWidgets.QAction(MainWindow)
+        self.action_ModuleStore.triggered.connect(self.openModStore)
         self.action_ModuleStore.setObjectName("action_ModuleStore")
-        
-        # create placeholder
-        self.action_ModulePlaceHolder = QtWidgets.QAction(MainWindow)
-        self.action_ModulePlaceHolder.setObjectName("action_ModulePlaceHolder")
-
+    
         # create rest of the actions
         self.actionReport = QtWidgets.QAction(MainWindow)
         self.actionReport.setObjectName("actionReport")
         self.actionContact = QtWidgets.QAction(MainWindow)
         self.actionContact.setObjectName("actionContact")
+        self.actionHome = QtWidgets.QAction(MainWindow)
+        self.actionHome.triggered.connect(self.home)
+        self.actionHome.setObjectName("actionHome")
         self.actionQuit = QtWidgets.QAction(MainWindow)
         self.actionQuit.setObjectName("actionQuit")
         self.menuModules.addAction(self.action_ModuleStore)
         self.menuModules.addSeparator()
 
-        # add installed modules to menubar
-        # add placeholder to menubar # OBSOLETE
-        #self.menuModules.addAction(self.action_ModulePlaceHolder) # OBSOLETE
-        self.setupMenubar()
-
         # add rest of actions
+        self.menuFile.addAction(self.actionHome)
         self.menuFile.addAction(self.actionCheck_For_Updates)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.menuModules.menuAction())
@@ -121,13 +161,82 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionContact)
         self.menubar.addAction(self.menuFile.menuAction())
 
+        self.Actions = []
+
+        self.modlistfile = f"C:/Users/{os.getlogin()}/AppData/Roaming/SchoolUtilities/Modules/ModList.mlst"
+
+        self.setupMenubar()
+
         self.importModules()
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+    def openModStore(self):
+        self.centralwidget.addWidget(self.MS)
+        self.centralwidget.setCurrentWidget(self.MS)
+
+    def requestForm(self):
+        self.centralwidget.addWidget(self.RF)
+        self.centralwidget.setCurrentWidget(self.RF)
+
+    def home(self):
+        self.centralwidget.addWidget(self.MW)
+        self.centralwidget.setCurrentWidget(self.MW)
+
+    def checkForUpdate(self):
+        hasUpdate = updater.checkUpdate("https://raw.githubusercontent.com/Nidhogg-Wyrmborn/GroupGenerator/main/version.v")
+        if hasUpdate:
+            updater.update(hasUpdate)
+            sys.exit(0)
+
     def setupMenubar(self):
-        pass
+        # set _translate
+        _translate = QtCore.QCoreApplication.translate
+
+        # get list of installed modules
+        while True:
+            try:
+                mods = ''.join(open(self.modlistfile, 'r').readlines()).split("\n")
+                version = mods[0]
+                mods.pop(0)
+                break
+            except:
+                open(self.modlistfile, 'w').write()
+            latest = "1.0.0"
+            if mods == '' or version < latest:
+                print("outdated")
+                break
+
+        for mod in mods:
+            temp = QtWidgets.QAction(MainWindow)
+            temp.triggered.connect(lambda: self.setWidget(mod))
+            temp.setText(_translate("MainWindow", "{ModuleName}"))
+            temp.setObjectName(f"DynamicModule{mods.index(mod)}")
+            self.Actions.append(temp)
+
+        # create placeholder
+        #self.action_ModulePlaceHolder = QtWidgets.QAction(MainWindow)
+        #self.action_ModulePlaceHolder.setObjectName("action_ModulePlaceHolder")
+
+        # add installed modules to menubar
+        # add placeholder to menubar # OBSOLETE
+        #self.menuModules.addAction(self.action_ModulePlaceHolder) # OBSOLETE
+
+        for action in self.Actions:
+            self.menuModules.addAction(action)
+
+    def setWidget(modId):
+        if modId in self.onlineModList:
+            exec(f"NewWidget = {modId}Widget()")
+        else:
+            msg = QMessageBox()
+            msg.setText("WARNING: INSECURE MODULE ID")
+            msg.setWindowTitle("WARNING")
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.buttonClicked.connect(msg.close)
+            return 1
+        self.centralwidget.setCurrentWidget(NewWidget)
 
     def hashify(self, item):
         if not isinstance(item, bytes):
@@ -166,19 +275,34 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuModules.setTitle(_translate("MainWindow", "Modules"))
+        self.actionHome.setText(_translate("MainWindow", "Home"))
         self.actionCheck_For_Updates.setText(_translate("MainWindow", "Check For Updates"))
         self.action_ModuleStore.setText(_translate("MainWindow", "Module Store"))
-        self.action_ModulePlaceHolder.setText(_translate("MainWindow", "{ModuleName}"))
         self.actionReport.setText(_translate("MainWindow", "Report"))
         self.actionContact.setText(_translate("MainWindow", "Contact"))
         self.actionQuit.setText(_translate("MainWindow", "Quit"))
 
+class Load_Window(QtWidgets.QDialog):
+    def __init__(self):
+        _translate = QtCore.QCoreApplication.translate
+        QtWidgets.QDialog.__init__(self)
+        self.resize(500, 500)
+        self.setWindowTitle("Loading Main Application")
+        title = QtWidgets.QLabel(self)
+        title.setGeometry(150,175,200,20)
+        title.setAlignment(QtCore.Qt.AlignHCenter)
+        title.setText(_translate("Load_Window", "Loading Main Application"))
+        self.show()
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
+    LoadWin = Load_Window()
+    app.processEvents()
+
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
+    LoadWin.close()
     MainWindow.show()
     sys.exit(app.exec_())

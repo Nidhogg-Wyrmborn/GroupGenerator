@@ -38,11 +38,11 @@ def SEND(msg, Title):
         'api_paste_format': None
     }
 
-    login = requests.post("https://pastebin.com/api/api_login.php", data=login_data)
+    login = requests.post("https://pastebin.com/api/api_login.php", data=login_data, verify=False)
     #print("Login status: ", login.status_code if login.status_code != 200 else "OK/200")
     #print("User token: ", login.text)
     data['api_user_key'] = login.text
-    r = requests.post("https://pastebin.com/api/api_post.php", data=data)
+    r = requests.post("https://pastebin.com/api/api_post.php", data=data, verify=False)
     #print("paste send: ", r.status_code if r.status_code != 200 else "OK/200")
     #print("Paste URL: ", r.text)
 
