@@ -293,6 +293,7 @@ class Load_Window(QtWidgets.QDialog):
         title.setAlignment(QtCore.Qt.AlignHCenter)
         title.setText(_translate("Load_Window", "Loading Main Application"))
         self.show()
+    
 
 if __name__ == "__main__":
     import sys
